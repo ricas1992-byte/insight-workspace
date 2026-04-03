@@ -29,6 +29,7 @@ import {
   LogOut,
   PanelRight,
   Lightbulb,
+  Pen,
 } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
@@ -36,10 +37,10 @@ import { DashboardLayoutSkeleton } from "./DashboardLayoutSkeleton";
 import { Button } from "./ui/button";
 
 const menuItems = [
-  { icon: LayoutGrid, label: "תובנות", path: "/" },
-  { icon: FileText, label: "עורך", path: "/editor" },
-  { icon: Network, label: "קנבס", path: "/canvas" },
-  { icon: Sparkles, label: "ניתוח AI", path: "/analysis" },
+  { icon: LayoutGrid, label: "תובנות", path: "/", description: "כל התובנות שלך" },
+  { icon: Pen, label: "עורך", path: "/editor", description: "כתיבה ועריכה" },
+  { icon: Network, label: "קנבס", path: "/canvas", description: "מפת קשרים" },
+  { icon: Sparkles, label: "ניתוח AI", path: "/analysis", description: "תובנות חכמות" },
 ];
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";
@@ -70,23 +71,25 @@ export default function DashboardLayout({
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">
         <div className="flex flex-col items-center gap-8 p-8 max-w-md w-full">
-          <div className="flex flex-col items-center gap-4">
-            <div className="flex items-center gap-3">
-              <Lightbulb className="h-10 w-10 text-primary" />
-              <h1 className="text-3xl font-bold tracking-tight text-foreground">
+          <div className="flex flex-col items-center gap-5">
+            <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center">
+              <Lightbulb className="h-8 w-8 text-primary" />
+            </div>
+            <div className="text-center">
+              <h1 className="text-2xl font-bold tracking-tight text-foreground mb-2">
                 INSIGHT WORKSPACE
               </h1>
+              <p className="text-sm text-muted-foreground leading-relaxed max-w-sm">
+                סביבת חשיבה אישית — מקום לתובנות, קשרים, וגילויים חדשים
+              </p>
             </div>
-            <p className="text-sm text-muted-foreground text-center max-w-sm leading-relaxed">
-              סביבת חשיבה אישית — מה האדם מבפנים לא רואה כאן?
-            </p>
           </div>
           <Button
             onClick={() => {
               window.location.href = getLoginUrl();
             }}
             size="lg"
-            className="w-full shadow-lg hover:shadow-xl transition-all"
+            className="w-full rounded-xl h-12 text-base font-medium shadow-md hover:shadow-lg transition-all"
           >
             התחברות
           </Button>
@@ -161,16 +164,16 @@ function DashboardLayoutContent({
     <>
       <SidebarInset>
         {isMobile && (
-          <div className="flex border-b h-14 items-center justify-between bg-background/95 px-3 backdrop-blur supports-[backdrop-filter]:backdrop-blur sticky top-0 z-40">
-            <div className="flex items-center gap-2">
-              <SidebarTrigger className="h-9 w-9 rounded-lg bg-background" />
+          <div className="flex border-b h-14 items-center justify-between bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:backdrop-blur sticky top-0 z-40">
+            <div className="flex items-center gap-3">
+              <SidebarTrigger className="h-9 w-9 rounded-xl" />
               <span className="tracking-tight text-foreground font-medium">
                 {activeMenuItem?.label ?? "תפריט"}
               </span>
             </div>
           </div>
         )}
-        <main className="flex-1 p-4 overflow-auto">{children}</main>
+        <main className="flex-1 p-5 md:p-6 overflow-auto">{children}</main>
       </SidebarInset>
 
       <div className="relative" ref={sidebarRef}>
@@ -191,16 +194,18 @@ function DashboardLayoutContent({
           <SidebarHeader className="h-16 justify-center">
             <div className="flex items-center gap-3 px-2 transition-all w-full">
               {!isCollapsed ? (
-                <div className="flex items-center gap-2 min-w-0 flex-1">
-                  <Lightbulb className="h-5 w-5 text-primary shrink-0" />
-                  <span className="font-bold tracking-tight truncate text-sm">
+                <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                  <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                    <Lightbulb className="h-4 w-4 text-primary" />
+                  </div>
+                  <span className="font-semibold tracking-tight truncate text-sm text-foreground">
                     INSIGHT WORKSPACE
                   </span>
                 </div>
               ) : null}
               <button
                 onClick={toggleSidebar}
-                className="h-8 w-8 flex items-center justify-center hover:bg-accent rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring shrink-0"
+                className="h-8 w-8 flex items-center justify-center hover:bg-accent rounded-xl transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring shrink-0"
                 aria-label="Toggle navigation"
               >
                 <PanelRight className="h-4 w-4 text-muted-foreground" />
@@ -208,8 +213,8 @@ function DashboardLayoutContent({
             </div>
           </SidebarHeader>
 
-          <SidebarContent className="gap-0">
-            <SidebarMenu className="px-2 py-1">
+          <SidebarContent className="gap-0 pt-2">
+            <SidebarMenu className="px-3 space-y-1">
               {menuItems.map((item) => {
                 const isActive = location === item.path;
                 return (
@@ -218,10 +223,14 @@ function DashboardLayoutContent({
                       isActive={isActive}
                       onClick={() => setLocation(item.path)}
                       tooltip={item.label}
-                      className="h-10 transition-all font-normal"
+                      className={`h-11 rounded-xl transition-all font-normal ${
+                        isActive
+                          ? "bg-primary/10 text-primary font-medium"
+                          : "hover:bg-accent"
+                      }`}
                     >
                       <item.icon
-                        className={`h-4 w-4 ${isActive ? "text-primary" : ""}`}
+                        className={`h-[18px] w-[18px] ${isActive ? "text-primary" : "text-muted-foreground"}`}
                       />
                       <span>{item.label}</span>
                     </SidebarMenuButton>
@@ -234,14 +243,14 @@ function DashboardLayoutContent({
           <SidebarFooter className="p-3">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-3 rounded-lg px-1 py-1 hover:bg-accent/50 transition-colors w-full text-right group-data-[collapsible=icon]:justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-                  <Avatar className="h-9 w-9 border shrink-0">
-                    <AvatarFallback className="text-xs font-medium">
+                <button className="flex items-center gap-3 rounded-xl px-2 py-2 hover:bg-accent/60 transition-colors w-full text-right group-data-[collapsible=icon]:justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                  <Avatar className="h-9 w-9 border border-border shrink-0">
+                    <AvatarFallback className="text-xs font-medium bg-primary/10 text-primary">
                       {user?.name?.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0 group-data-[collapsible=icon]:hidden">
-                    <p className="text-sm font-medium truncate leading-none">
+                    <p className="text-sm font-medium truncate leading-none text-foreground">
                       {user?.name || "-"}
                     </p>
                     <p className="text-xs text-muted-foreground truncate mt-1.5">
@@ -250,10 +259,10 @@ function DashboardLayoutContent({
                   </div>
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuContent align="end" className="w-48 rounded-xl">
                 <DropdownMenuItem
                   onClick={logout}
-                  className="cursor-pointer text-destructive focus:text-destructive"
+                  className="cursor-pointer text-destructive focus:text-destructive rounded-lg"
                 >
                   <LogOut className="ml-2 h-4 w-4" />
                   <span>התנתקות</span>

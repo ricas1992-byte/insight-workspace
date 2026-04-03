@@ -21,6 +21,17 @@
 - [x] Frontend: Auto-suggested related insights sidebar
 - [x] Frontend: Export functionality (markdown/PDF)
 - [x] Frontend: Hebrew RTL support throughout
-- [x] UI/UX: Dark theme with warm accent colors
+- [x] UI/UX: Light theme with warm, inviting teal/cream palette
 - [x] UI/UX: Responsive design for iOS compatibility
 - [x] Tests: Core API vitest specs
+
+## Redesign — Warm, Inviting, User-Friendly
+
+- [x] Switch to light theme with warm, soft color palette
+- [x] Update typography to friendly, readable fonts (Rubik)
+- [x] Redesign DashboardLayout sidebar — softer, warmer navigation
+- [x] Redesign Home page — welcoming cards, warm empty states
+- [x] Redesign Editor page — clean, inviting writing experience
+- [x] Redesign Canvas page — friendly visual style
+- [x] Redesign Analysis page — warm AI interaction
+- [x] Ensure all components feel cohesive and inviting

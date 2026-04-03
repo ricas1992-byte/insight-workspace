@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
@@ -22,19 +22,18 @@ import {
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Textarea } from "@/components/ui/textarea";
 import {
   ArrowRight,
   Save,
   Loader2,
   Tag,
   Plus,
-  X,
   Clock,
   Sparkles,
   History,
   Link2,
   FileText,
+  PenLine,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Streamdown } from "streamdown";
@@ -54,7 +53,7 @@ export default function Editor() {
   const [showRelated, setShowRelated] = useState(false);
   const [showNewTag, setShowNewTag] = useState(false);
   const [newTagName, setNewTagName] = useState("");
-  const [newTagColor, setNewTagColor] = useState("#6366f1");
+  const [newTagColor, setNewTagColor] = useState("#0d9488");
   const [isEditorMode, setIsEditorMode] = useState(true);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
@@ -71,7 +70,7 @@ export default function Editor() {
 
   const updateMutation = trpc.insights.update.useMutation({
     onSuccess: () => {
-      toast.success("נשמר");
+      toast.success("נשמר בהצלחה");
       setHasUnsavedChanges(false);
       insightQuery.refetch();
     },
@@ -87,7 +86,6 @@ export default function Editor() {
   });
   const suggestMutation = trpc.ai.suggestRelated.useMutation();
 
-  // Load insight data
   useEffect(() => {
     if (insightQuery.data) {
       setTitle(insightQuery.data.title);
@@ -111,7 +109,6 @@ export default function Editor() {
     });
   }, [insightId, title, content, status, category, selectedTagIds]);
 
-  // Keyboard shortcut: Ctrl/Cmd+S
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "s") {
@@ -132,14 +129,17 @@ export default function Editor() {
   if (!insightId) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
-        <FileText className="h-12 w-12 text-muted-foreground/30 mb-4" />
-        <h3 className="text-lg font-medium text-muted-foreground">
+        <div className="h-16 w-16 rounded-2xl bg-primary/5 flex items-center justify-center mb-5">
+          <PenLine className="h-8 w-8 text-primary/30" />
+        </div>
+        <h3 className="text-lg font-semibold text-foreground mb-1">
           בחר תובנה לעריכה
         </h3>
-        <p className="text-sm text-muted-foreground/70 mt-1">
-          לחץ על תובנה מהרשימה או צור חדשה
+        <p className="text-sm text-muted-foreground max-w-xs leading-relaxed">
+          לחץ על תובנה מהרשימה או צור חדשה כדי להתחיל לכתוב
         </p>
-        <Button className="mt-4" onClick={() => setLocation("/")}>
+        <Button className="mt-5 rounded-xl" onClick={() => setLocation("/")}>
+          <ArrowRight className="h-4 w-4 ml-1" />
           חזרה לתובנות
         </Button>
       </div>
@@ -149,7 +149,7 @@ export default function Editor() {
   if (insightQuery.isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        <Loader2 className="h-6 w-6 animate-spin text-primary/40" />
       </div>
     );
   }
@@ -159,7 +159,7 @@ export default function Editor() {
       {/* Top bar */}
       <div className="flex items-center justify-between gap-3 pb-4 border-b border-border flex-wrap">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="sm" onClick={() => setLocation("/")}>
+          <Button variant="ghost" size="sm" onClick={() => setLocation("/")} className="rounded-xl">
             <ArrowRight className="h-4 w-4" />
           </Button>
           <Input
@@ -180,10 +180,10 @@ export default function Editor() {
               setHasUnsavedChanges(true);
             }}
           >
-            <SelectTrigger className="w-[100px] h-8 text-xs">
+            <SelectTrigger className="w-[100px] h-8 text-xs rounded-lg">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="rounded-xl">
               <SelectItem value="draft">טיוטה</SelectItem>
               <SelectItem value="active">פעיל</SelectItem>
               <SelectItem value="archived">ארכיון</SelectItem>
@@ -193,7 +193,7 @@ export default function Editor() {
             variant="outline"
             size="sm"
             onClick={() => setShowHistory(true)}
-            className="gap-1"
+            className="gap-1 rounded-xl"
           >
             <History className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">היסטוריה</span>
@@ -202,7 +202,7 @@ export default function Editor() {
             variant="outline"
             size="sm"
             onClick={handleSuggestRelated}
-            className="gap-1"
+            className="gap-1 rounded-xl"
           >
             <Link2 className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">קשרים</span>
@@ -211,7 +211,7 @@ export default function Editor() {
             size="sm"
             onClick={handleSave}
             disabled={updateMutation.isPending || !hasUnsavedChanges}
-            className="gap-1"
+            className="gap-1 rounded-xl"
           >
             {updateMutation.isPending ? (
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -231,7 +231,7 @@ export default function Editor() {
             <Badge
               key={tag.id}
               variant={selectedTagIds.includes(tag.id) ? "default" : "outline"}
-              className="text-[10px] cursor-pointer"
+              className="text-[10px] cursor-pointer rounded-lg"
               onClick={() => {
                 setSelectedTagIds((prev) =>
                   prev.includes(tag.id)
@@ -247,7 +247,7 @@ export default function Editor() {
           <Button
             variant="ghost"
             size="sm"
-            className="h-5 w-5 p-0"
+            className="h-5 w-5 p-0 rounded-md"
             onClick={() => setShowNewTag(true)}
           >
             <Plus className="h-3 w-3" />
@@ -261,7 +261,7 @@ export default function Editor() {
             setHasUnsavedChanges(true);
           }}
           placeholder="קטגוריה"
-          className="h-7 text-xs w-[140px] bg-transparent"
+          className="h-7 text-xs w-[140px] bg-transparent rounded-lg"
           list="categories"
         />
         <datalist id="categories">
@@ -272,12 +272,12 @@ export default function Editor() {
       </div>
 
       {/* Editor area */}
-      <div className="flex-1 overflow-hidden rounded-lg border border-border">
-        <div className="flex items-center gap-1 px-3 py-1.5 border-b border-border bg-muted/30">
+      <div className="flex-1 overflow-hidden rounded-xl border border-border bg-card">
+        <div className="flex items-center gap-1 px-3 py-2 border-b border-border bg-muted/30">
           <Button
             variant={isEditorMode ? "secondary" : "ghost"}
             size="sm"
-            className="h-6 text-xs"
+            className="h-7 text-xs rounded-lg"
             onClick={() => setIsEditorMode(true)}
           >
             עריכה
@@ -285,13 +285,13 @@ export default function Editor() {
           <Button
             variant={!isEditorMode ? "secondary" : "ghost"}
             size="sm"
-            className="h-6 text-xs"
+            className="h-7 text-xs rounded-lg"
             onClick={() => setIsEditorMode(false)}
           >
             תצוגה
           </Button>
         </div>
-        <div className="h-[calc(100%-2.5rem)] overflow-auto" data-color-mode="dark">
+        <div className="h-[calc(100%-2.75rem)] overflow-auto" data-color-mode="light">
           {isEditorMode ? (
             <MDEditor
               value={content}
@@ -306,7 +306,7 @@ export default function Editor() {
               style={{ background: "transparent" }}
             />
           ) : (
-            <div className="p-6 prose prose-invert max-w-none" dir="rtl">
+            <div className="p-6 prose prose-sm max-w-none" dir="rtl">
               <Streamdown>{content || "*אין תוכן עדיין*"}</Streamdown>
             </div>
           )}
@@ -315,35 +315,35 @@ export default function Editor() {
 
       {/* History Dialog */}
       <Dialog open={showHistory} onOpenChange={setShowHistory}>
-        <DialogContent className="sm:max-w-[600px] max-h-[80vh]">
+        <DialogContent className="sm:max-w-[600px] max-h-[80vh] rounded-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <History className="h-5 w-5" />
+              <History className="h-5 w-5 text-primary" />
               היסטוריית שינויים
             </DialogTitle>
           </DialogHeader>
           <ScrollArea className="max-h-[60vh]">
             {historyQuery.isLoading ? (
               <div className="flex justify-center py-8">
-                <Loader2 className="h-5 w-5 animate-spin" />
+                <Loader2 className="h-5 w-5 animate-spin text-primary/40" />
               </div>
             ) : historyQuery.data?.length === 0 ? (
               <p className="text-center text-muted-foreground py-8">
                 אין היסטוריה עדיין
               </p>
             ) : (
-              <div className="space-y-4 p-1">
+              <div className="space-y-3 p-1">
                 {historyQuery.data?.map((entry: any) => (
-                  <Card key={entry.id} className="p-4">
+                  <Card key={entry.id} className="p-4 rounded-xl">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium">{entry.title}</span>
+                      <span className="text-sm font-medium text-foreground">{entry.title}</span>
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <Clock className="h-3 w-3" />
                         {new Date(entry.createdAt).toLocaleString("he-IL")}
                       </div>
                     </div>
                     {entry.changeNote && (
-                      <Badge variant="secondary" className="text-[10px] mb-2">
+                      <Badge variant="secondary" className="text-[10px] mb-2 rounded-md">
                         {entry.changeNote}
                       </Badge>
                     )}
@@ -353,7 +353,7 @@ export default function Editor() {
                     {entry.tagsSnapshot && (entry.tagsSnapshot as string[]).length > 0 && (
                       <div className="flex gap-1 mt-2">
                         {(entry.tagsSnapshot as string[]).map((t: string, i: number) => (
-                          <Badge key={i} variant="outline" className="text-[10px]">
+                          <Badge key={i} variant="outline" className="text-[10px] rounded-md">
                             {t}
                           </Badge>
                         ))}
@@ -369,7 +369,7 @@ export default function Editor() {
 
       {/* Related Insights Dialog */}
       <Dialog open={showRelated} onOpenChange={setShowRelated}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[500px] rounded-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-primary" />
@@ -392,7 +392,7 @@ export default function Editor() {
                     <Button
                       key={id}
                       variant="outline"
-                      className="w-full justify-start gap-2"
+                      className="w-full justify-start gap-2 rounded-xl"
                       onClick={() => {
                         setShowRelated(false);
                         setLocation(`/editor/${id}`);
@@ -411,9 +411,12 @@ export default function Editor() {
 
       {/* New Tag Dialog */}
       <Dialog open={showNewTag} onOpenChange={setShowNewTag}>
-        <DialogContent className="sm:max-w-[350px]">
+        <DialogContent className="sm:max-w-[350px] rounded-2xl">
           <DialogHeader>
-            <DialogTitle>תגית חדשה</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              <Tag className="h-5 w-5 text-primary" />
+              תגית חדשה
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-3 py-2">
             <div className="space-y-2">
@@ -422,6 +425,7 @@ export default function Editor() {
                 value={newTagName}
                 onChange={(e) => setNewTagName(e.target.value)}
                 placeholder="שם התגית"
+                className="rounded-xl"
               />
             </div>
             <div className="space-y-2">
@@ -431,12 +435,12 @@ export default function Editor() {
                   type="color"
                   value={newTagColor}
                   onChange={(e) => setNewTagColor(e.target.value)}
-                  className="h-8 w-8 rounded cursor-pointer"
+                  className="h-8 w-8 rounded-lg cursor-pointer"
                 />
                 <Input
                   value={newTagColor}
                   onChange={(e) => setNewTagColor(e.target.value)}
-                  className="flex-1"
+                  className="flex-1 rounded-xl"
                 />
               </div>
             </div>
@@ -447,6 +451,7 @@ export default function Editor() {
                 createTagMutation.mutate({ name: newTagName, color: newTagColor })
               }
               disabled={!newTagName.trim() || createTagMutation.isPending}
+              className="rounded-xl"
             >
               צור תגית
             </Button>

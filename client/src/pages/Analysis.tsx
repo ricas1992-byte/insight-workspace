@@ -5,7 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Sparkles, Loader2, Eye, Send, Lightbulb, RefreshCw } from "lucide-react";
+import { Sparkles, Loader2, Eye, Send, Lightbulb } from "lucide-react";
 import { Streamdown } from "streamdown";
 
 type AnalysisEntry = {
@@ -53,8 +53,8 @@ export default function Analysis() {
     <div className="h-[calc(100vh-4rem)] flex flex-col">
       {/* Header */}
       <div className="pb-4 border-b border-border">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+        <div className="flex items-center gap-3 mb-1">
+          <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
             <Eye className="h-5 w-5 text-primary" />
           </div>
           <div>
@@ -67,10 +67,12 @@ export default function Analysis() {
       </div>
 
       <div className="flex-1 flex flex-col gap-4 pt-4 overflow-hidden">
-        {/* Suggested questions */}
+        {/* First-run empty state */}
         {analyses.length === 0 && (
-          <div className="flex flex-col items-center gap-6 py-8">
-            <Sparkles className="h-16 w-16 text-primary/20" />
+          <div className="flex flex-col items-center gap-6 py-10">
+            <div className="h-20 w-20 rounded-2xl bg-primary/5 flex items-center justify-center">
+              <Sparkles className="h-10 w-10 text-primary/30" />
+            </div>
             <div className="text-center">
               <h2 className="text-lg font-semibold text-foreground mb-2">
                 שאל את ה-AI
@@ -86,7 +88,7 @@ export default function Analysis() {
                   key={i}
                   variant="outline"
                   size="sm"
-                  className="text-xs"
+                  className="text-xs rounded-xl hover:bg-primary/5 hover:border-primary/30 transition-colors"
                   onClick={() => handleAnalyze(q)}
                   disabled={analyzeMutation.isPending || insightCount === 0}
                 >
@@ -95,7 +97,7 @@ export default function Analysis() {
               ))}
             </div>
             {insightCount === 0 && (
-              <p className="text-xs text-destructive">
+              <p className="text-xs text-amber-600 bg-amber-50 px-3 py-1.5 rounded-lg">
                 צור תובנות קודם כדי שה-AI יוכל לנתח אותן
               </p>
             )}
@@ -107,7 +109,7 @@ export default function Analysis() {
           <ScrollArea className="flex-1">
             <div className="space-y-4 pb-4">
               {analyzeMutation.isPending && (
-                <Card className="p-6">
+                <Card className="p-6 rounded-xl border-primary/15">
                   <div className="flex items-center gap-3">
                     <Loader2 className="h-5 w-5 animate-spin text-primary" />
                     <span className="text-sm text-muted-foreground">
@@ -117,20 +119,20 @@ export default function Analysis() {
                 </Card>
               )}
               {analyses.map((entry, i) => (
-                <Card key={i} className="p-5">
+                <Card key={i} className="p-5 rounded-xl">
                   <div className="flex items-center gap-2 mb-3">
                     <Lightbulb className="h-4 w-4 text-primary" />
                     <span className="text-sm font-medium text-primary">
                       {entry.question}
                     </span>
-                    <Badge variant="secondary" className="text-[10px] mr-auto">
+                    <Badge variant="secondary" className="text-[10px] mr-auto rounded-md">
                       {entry.timestamp.toLocaleTimeString("he-IL", {
                         hour: "2-digit",
                         minute: "2-digit",
                       })}
                     </Badge>
                   </div>
-                  <div className="prose prose-invert prose-sm max-w-none">
+                  <div className="prose prose-sm max-w-none text-foreground">
                     <Streamdown>{entry.analysis}</Streamdown>
                   </div>
                 </Card>
@@ -152,7 +154,7 @@ export default function Analysis() {
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
               placeholder="שאל שאלה על התובנות שלך..."
-              className="flex-1 max-h-24 resize-none min-h-10"
+              className="flex-1 max-h-24 resize-none min-h-10 rounded-xl"
               rows={1}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
@@ -165,7 +167,7 @@ export default function Analysis() {
               type="submit"
               size="icon"
               disabled={analyzeMutation.isPending || insightCount === 0}
-              className="shrink-0 h-10 w-10"
+              className="shrink-0 h-10 w-10 rounded-xl"
             >
               {analyzeMutation.isPending ? (
                 <Loader2 className="h-4 w-4 animate-spin" />

@@ -24,7 +24,6 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Plus,
   Search,
-  FileText,
   Mic,
   Download,
   Loader2,
@@ -32,20 +31,15 @@ import {
   X,
   Lightbulb,
   Clock,
-  Tag,
+  BookOpen,
+  PenLine,
 } from "lucide-react";
 import { toast } from "sonner";
 
-const statusColors: Record<string, string> = {
-  draft: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
-  active: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
-  archived: "bg-zinc-500/20 text-zinc-400 border-zinc-500/30",
-};
-
-const statusLabels: Record<string, string> = {
-  draft: "טיוטה",
-  active: "פעיל",
-  archived: "ארכיון",
+const statusConfig: Record<string, { label: string; color: string; bg: string }> = {
+  draft: { label: "טיוטה", color: "text-amber-600", bg: "bg-amber-50 border-amber-200" },
+  active: { label: "פעיל", color: "text-emerald-600", bg: "bg-emerald-50 border-emerald-200" },
+  archived: { label: "ארכיון", color: "text-gray-500", bg: "bg-gray-50 border-gray-200" },
 };
 
 export default function Home() {
@@ -167,9 +161,13 @@ export default function Home() {
       {/* Header */}
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">תובנות</h1>
+          <h1 className="text-2xl font-bold text-foreground">
+            שלום, יוטם
+          </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            {stats.total} תובנות — {stats.active} פעילות, {stats.draft} טיוטות
+            {stats.total === 0
+              ? "מוכן להתחיל? צור את התובנה הראשונה שלך"
+              : `${stats.total} תובנות — ${stats.active} פעילות, ${stats.draft} טיוטות`}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -177,19 +175,23 @@ export default function Home() {
             variant="outline"
             size="sm"
             onClick={() => setShowVoiceDialog(true)}
-            className="gap-2"
+            className="gap-2 rounded-xl h-9"
           >
             <Mic className="h-4 w-4" />
             <span className="hidden sm:inline">הקלטה</span>
           </Button>
-          <Button size="sm" onClick={() => setShowCreateDialog(true)} className="gap-2">
+          <Button
+            size="sm"
+            onClick={() => setShowCreateDialog(true)}
+            className="gap-2 rounded-xl h-9"
+          >
             <Plus className="h-4 w-4" />
             <span className="hidden sm:inline">תובנה חדשה</span>
           </Button>
         </div>
       </div>
 
-      {/* Filters */}
+      {/* Search & Filters */}
       <div className="flex items-center gap-3 flex-wrap">
         <div className="relative flex-1 min-w-[200px] max-w-sm">
           <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -197,15 +199,15 @@ export default function Home() {
             placeholder="חיפוש תובנות..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pr-9"
+            className="pr-9 rounded-xl h-10"
           />
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-[130px]">
-            <Filter className="h-3.5 w-3.5 ml-2" />
+          <SelectTrigger className="w-[130px] rounded-xl h-10">
+            <Filter className="h-3.5 w-3.5 ml-2 text-muted-foreground" />
             <SelectValue placeholder="סטטוס" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="rounded-xl">
             <SelectItem value="all">הכל</SelectItem>
             <SelectItem value="draft">טיוטה</SelectItem>
             <SelectItem value="active">פעיל</SelectItem>
@@ -218,7 +220,7 @@ export default function Home() {
               <Badge
                 key={tag.id}
                 variant={selectedTagIds.includes(tag.id) ? "default" : "outline"}
-                className="cursor-pointer text-xs"
+                className="cursor-pointer text-xs rounded-lg"
                 onClick={() =>
                   setSelectedTagIds((prev) =>
                     prev.includes(tag.id)
@@ -241,7 +243,7 @@ export default function Home() {
 
       {/* Export bar */}
       {selectedIds.length > 0 && (
-        <div className="flex items-center gap-3 p-3 bg-primary/10 rounded-lg border border-primary/20">
+        <div className="flex items-center gap-3 p-3 bg-primary/5 rounded-xl border border-primary/15">
           <span className="text-sm text-primary font-medium">
             {selectedIds.length} נבחרו
           </span>
@@ -250,7 +252,7 @@ export default function Home() {
             variant="outline"
             onClick={() => exportMutation.mutate({ ids: selectedIds })}
             disabled={exportMutation.isPending}
-            className="gap-1"
+            className="gap-1 rounded-lg"
           >
             <Download className="h-3.5 w-3.5" />
             ייצוא
@@ -264,94 +266,123 @@ export default function Home() {
       {/* Insights Grid */}
       {insightsQuery.isLoading ? (
         <div className="flex items-center justify-center py-20">
-          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          <Loader2 className="h-6 w-6 animate-spin text-primary/40" />
         </div>
       ) : insights.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
-          <Lightbulb className="h-12 w-12 text-muted-foreground/30 mb-4" />
-          <h3 className="text-lg font-medium text-muted-foreground">
+          <div className="h-20 w-20 rounded-2xl bg-primary/5 flex items-center justify-center mb-5">
+            <Lightbulb className="h-10 w-10 text-primary/30" />
+          </div>
+          <h3 className="text-lg font-semibold text-foreground mb-1">
             אין תובנות עדיין
           </h3>
-          <p className="text-sm text-muted-foreground/70 mt-1">
-            צור תובנה חדשה או הקלט מחשבה קולית
+          <p className="text-sm text-muted-foreground max-w-xs leading-relaxed">
+            צור תובנה חדשה או הקלט מחשבה קולית כדי להתחיל לבנות את מרחב החשיבה שלך
           </p>
+          <div className="flex gap-2 mt-5">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowVoiceDialog(true)}
+              className="gap-2 rounded-xl"
+            >
+              <Mic className="h-4 w-4" />
+              הקלט מחשבה
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => setShowCreateDialog(true)}
+              className="gap-2 rounded-xl"
+            >
+              <PenLine className="h-4 w-4" />
+              כתוב תובנה
+            </Button>
+          </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {insights.map((insight) => (
-            <Card
-              key={insight.id}
-              className={`p-4 hover:border-primary/30 transition-all cursor-pointer group relative ${
-                selectedIds.includes(insight.id) ? "border-primary ring-1 ring-primary/30" : ""
-              }`}
-              onClick={() => setLocation(`/editor/${insight.id}`)}
-            >
-              <div className="flex items-start justify-between gap-2 mb-3">
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-sm truncate text-foreground group-hover:text-primary transition-colors">
-                    {insight.title}
-                  </h3>
-                </div>
-                <Badge
-                  variant="outline"
-                  className={`text-[10px] shrink-0 ${statusColors[insight.status]}`}
-                >
-                  {statusLabels[insight.status]}
-                </Badge>
-              </div>
-
-              {insight.content && (
-                <p className="text-xs text-muted-foreground line-clamp-3 mb-3 leading-relaxed">
-                  {insight.content.replace(/[#*_`]/g, "").substring(0, 200)}
-                </p>
-              )}
-
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  {insight.tags?.slice(0, 3).map((tag: any) => (
-                    <Badge
-                      key={tag.id}
-                      variant="secondary"
-                      className="text-[10px] px-1.5 py-0"
-                      style={{ borderColor: tag.color, color: tag.color }}
-                    >
-                      {tag.name}
-                    </Badge>
-                  ))}
-                  {(insight.tags?.length ?? 0) > 3 && (
-                    <span className="text-[10px] text-muted-foreground">
-                      +{(insight.tags?.length ?? 0) - 3}
-                    </span>
-                  )}
-                </div>
-                <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                  <Clock className="h-3 w-3" />
-                  {new Date(insight.updatedAt).toLocaleDateString("he-IL")}
-                </div>
-              </div>
-
-              {/* Selection checkbox */}
-              <button
-                className="absolute top-2 left-2 h-5 w-5 rounded border border-border flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-background hover:bg-accent"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  toggleSelect(insight.id);
-                }}
+          {insights.map((insight) => {
+            const sc = statusConfig[insight.status] || statusConfig.draft;
+            return (
+              <Card
+                key={insight.id}
+                className={`p-5 rounded-xl hover:shadow-md transition-all cursor-pointer group relative border ${
+                  selectedIds.includes(insight.id)
+                    ? "border-primary ring-2 ring-primary/15 shadow-md"
+                    : "border-border hover:border-primary/25"
+                }`}
+                onClick={() => setLocation(`/editor/${insight.id}`)}
               >
-                {selectedIds.includes(insight.id) && (
-                  <div className="h-3 w-3 rounded-sm bg-primary" />
+                <div className="flex items-start justify-between gap-2 mb-3">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-sm truncate text-foreground group-hover:text-primary transition-colors">
+                      {insight.title}
+                    </h3>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className={`text-[10px] shrink-0 rounded-lg border ${sc.bg} ${sc.color}`}
+                  >
+                    {sc.label}
+                  </Badge>
+                </div>
+
+                {insight.content && (
+                  <p className="text-xs text-muted-foreground line-clamp-3 mb-3 leading-relaxed">
+                    {insight.content.replace(/[#*_`]/g, "").substring(0, 200)}
+                  </p>
                 )}
-              </button>
-            </Card>
-          ))}
+
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {insight.tags?.slice(0, 3).map((tag: any) => (
+                      <Badge
+                        key={tag.id}
+                        variant="secondary"
+                        className="text-[10px] px-1.5 py-0 rounded-md"
+                        style={{ borderColor: tag.color, color: tag.color }}
+                      >
+                        {tag.name}
+                      </Badge>
+                    ))}
+                    {(insight.tags?.length ?? 0) > 3 && (
+                      <span className="text-[10px] text-muted-foreground">
+                        +{(insight.tags?.length ?? 0) - 3}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                    <Clock className="h-3 w-3" />
+                    {new Date(insight.updatedAt).toLocaleDateString("he-IL")}
+                  </div>
+                </div>
+
+                {/* Selection checkbox */}
+                <button
+                  className="absolute top-3 left-3 h-5 w-5 rounded-md border border-border flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-background hover:bg-accent"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleSelect(insight.id);
+                  }}
+                >
+                  {selectedIds.includes(insight.id) && (
+                    <div className="h-3 w-3 rounded-sm bg-primary" />
+                  )}
+                </button>
+              </Card>
+            );
+          })}
         </div>
       )}
 
       {/* Create Dialog */}
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[500px] rounded-2xl">
           <DialogHeader>
-            <DialogTitle>תובנה חדשה</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              <PenLine className="h-5 w-5 text-primary" />
+              תובנה חדשה
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-2">
@@ -361,6 +392,7 @@ export default function Home() {
                 onChange={(e) => setNewTitle(e.target.value)}
                 placeholder="מה התובנה?"
                 autoFocus
+                className="rounded-xl"
               />
             </div>
             <div className="space-y-2">
@@ -370,15 +402,16 @@ export default function Home() {
                 onChange={(e) => setNewContent(e.target.value)}
                 placeholder="פרט את המחשבה..."
                 rows={4}
+                className="rounded-xl"
               />
             </div>
             <div className="space-y-2">
               <Label>סטטוס</Label>
               <Select value={newStatus} onValueChange={(v) => setNewStatus(v as any)}>
-                <SelectTrigger>
+                <SelectTrigger className="rounded-xl">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="rounded-xl">
                   <SelectItem value="draft">טיוטה</SelectItem>
                   <SelectItem value="active">פעיל</SelectItem>
                 </SelectContent>
@@ -386,7 +419,7 @@ export default function Home() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
+            <Button variant="outline" onClick={() => setShowCreateDialog(false)} className="rounded-xl">
               ביטול
             </Button>
             <Button
@@ -398,6 +431,7 @@ export default function Home() {
                 })
               }
               disabled={!newTitle.trim() || createMutation.isPending}
+              className="rounded-xl"
             >
               {createMutation.isPending ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -411,17 +445,20 @@ export default function Home() {
 
       {/* Voice Recording Dialog */}
       <Dialog open={showVoiceDialog} onOpenChange={setShowVoiceDialog}>
-        <DialogContent className="sm:max-w-[400px]">
+        <DialogContent className="sm:max-w-[400px] rounded-2xl">
           <DialogHeader>
-            <DialogTitle>הקלטת מחשבה</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              <Mic className="h-5 w-5 text-primary" />
+              הקלטת מחשבה
+            </DialogTitle>
           </DialogHeader>
           <div className="flex flex-col items-center gap-6 py-8">
             <div
               className={`h-24 w-24 rounded-full flex items-center justify-center transition-all ${
                 isRecording
-                  ? "bg-destructive/20 animate-pulse"
+                  ? "bg-red-50 border-2 border-red-200 animate-pulse"
                   : voiceMutation.isPending
-                    ? "bg-primary/20"
+                    ? "bg-primary/10"
                     : "bg-muted"
               }`}
             >
@@ -429,7 +466,7 @@ export default function Home() {
                 <Loader2 className="h-10 w-10 animate-spin text-primary" />
               ) : (
                 <Mic
-                  className={`h-10 w-10 ${isRecording ? "text-destructive" : "text-muted-foreground"}`}
+                  className={`h-10 w-10 ${isRecording ? "text-red-500" : "text-muted-foreground"}`}
                 />
               )}
             </div>
@@ -445,6 +482,7 @@ export default function Home() {
               variant={isRecording ? "destructive" : "default"}
               onClick={isRecording ? handleStopRecording : handleStartRecording}
               disabled={voiceMutation.isPending}
+              className="rounded-xl"
             >
               {isRecording ? "עצור הקלטה" : "התחל הקלטה"}
             </Button>

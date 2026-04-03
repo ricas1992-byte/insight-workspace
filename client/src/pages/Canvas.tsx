@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useMemo } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
@@ -24,9 +24,9 @@ import { Loader2, Save, Network } from "lucide-react";
 import { toast } from "sonner";
 
 const statusColors: Record<string, string> = {
-  draft: "#eab308",
-  active: "#22c55e",
-  archived: "#71717a",
+  draft: "#d97706",
+  active: "#059669",
+  archived: "#9ca3af",
 };
 
 type InsightNodeData = {
@@ -41,32 +41,32 @@ function InsightNode({ data }: { data: InsightNodeData } & Partial<NodeProps>) {
   const [, setLocation] = useLocation();
   return (
     <div
-      className="bg-card border border-border rounded-lg p-3 min-w-[180px] max-w-[250px] shadow-lg hover:border-primary/50 transition-colors cursor-pointer"
+      className="bg-white border border-gray-200 rounded-xl p-4 min-w-[190px] max-w-[260px] shadow-sm hover:shadow-md hover:border-teal-300 transition-all cursor-pointer"
       onDoubleClick={() => setLocation(`/editor/${data.insightId}`)}
     >
-      <Handle type="target" position={Position.Top} className="!bg-primary !w-2 !h-2" />
-      <div className="flex items-center gap-2 mb-1.5">
+      <Handle type="target" position={Position.Top} className="!bg-teal-500 !w-2.5 !h-2.5 !border-2 !border-white" />
+      <div className="flex items-center gap-2 mb-2">
         <div
-          className="h-2 w-2 rounded-full shrink-0"
-          style={{ backgroundColor: statusColors[data.status] || "#71717a" }}
+          className="h-2.5 w-2.5 rounded-full shrink-0"
+          style={{ backgroundColor: statusColors[data.status] || "#9ca3af" }}
         />
-        <span className="text-xs font-semibold text-foreground truncate">{data.label}</span>
+        <span className="text-xs font-semibold text-gray-800 truncate">{data.label}</span>
       </div>
       {data.preview && (
-        <p className="text-[10px] text-muted-foreground line-clamp-2 leading-relaxed">
+        <p className="text-[11px] text-gray-500 line-clamp-2 leading-relaxed mb-2">
           {data.preview}
         </p>
       )}
       {data.tags && data.tags.length > 0 && (
-        <div className="flex gap-1 mt-2 flex-wrap">
+        <div className="flex gap-1 flex-wrap">
           {data.tags.slice(0, 2).map((tag: string, i: number) => (
-            <span key={i} className="text-[9px] px-1.5 py-0.5 bg-muted rounded text-muted-foreground">
+            <span key={i} className="text-[9px] px-1.5 py-0.5 bg-gray-100 rounded-md text-gray-500">
               {tag}
             </span>
           ))}
         </div>
       )}
-      <Handle type="source" position={Position.Bottom} className="!bg-primary !w-2 !h-2" />
+      <Handle type="source" position={Position.Bottom} className="!bg-teal-500 !w-2.5 !h-2.5 !border-2 !border-white" />
     </div>
   );
 }
@@ -93,7 +93,6 @@ export default function Canvas() {
     },
   });
 
-  // Build nodes from insights
   useEffect(() => {
     if (!insightsQuery.data) return;
     const COLS = 4;
@@ -118,7 +117,6 @@ export default function Canvas() {
     setNodes(newNodes);
   }, [insightsQuery.data]);
 
-  // Build edges from connections
   useEffect(() => {
     if (!connectionsQuery.data) return;
     const newEdges: Edge[] = connectionsQuery.data.map((conn) => ({
@@ -126,8 +124,8 @@ export default function Canvas() {
       source: `insight-${conn.sourceInsightId}`,
       target: `insight-${conn.targetInsightId}`,
       label: conn.label || "",
-      style: { stroke: "oklch(0.75 0.15 65)", strokeWidth: 2 },
-      labelStyle: { fill: "oklch(0.65 0.015 260)", fontSize: 11 },
+      style: { stroke: "#0d9488", strokeWidth: 2 },
+      labelStyle: { fill: "#6b7280", fontSize: 11, fontFamily: "Rubik, sans-serif" },
       animated: true,
       data: { connectionId: conn.id },
     }));
@@ -140,7 +138,7 @@ export default function Canvas() {
       const targetId = parseInt(connection.target?.replace("insight-", "") || "0");
       if (sourceId && targetId) {
         createConnectionMutation.mutate({ sourceInsightId: sourceId, targetInsightId: targetId });
-        setEdges((eds) => addEdge({ ...connection, animated: true, style: { stroke: "oklch(0.75 0.15 65)", strokeWidth: 2 } }, eds));
+        setEdges((eds) => addEdge({ ...connection, animated: true, style: { stroke: "#0d9488", strokeWidth: 2 } }, eds));
       }
     },
     [createConnectionMutation]
@@ -172,7 +170,7 @@ export default function Canvas() {
   if (insightsQuery.isLoading || connectionsQuery.isLoading) {
     return (
       <div className="flex items-center justify-center h-[calc(100vh-4rem)]">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        <Loader2 className="h-6 w-6 animate-spin text-primary/40" />
       </div>
     );
   }
@@ -180,11 +178,13 @@ export default function Canvas() {
   if (!insightsQuery.data?.length) {
     return (
       <div className="flex flex-col items-center justify-center h-[calc(100vh-4rem)] text-center">
-        <Network className="h-12 w-12 text-muted-foreground/30 mb-4" />
-        <h3 className="text-lg font-medium text-muted-foreground">
+        <div className="h-20 w-20 rounded-2xl bg-primary/5 flex items-center justify-center mb-5">
+          <Network className="h-10 w-10 text-primary/30" />
+        </div>
+        <h3 className="text-lg font-semibold text-foreground mb-1">
           הקנבס ריק
         </h3>
-        <p className="text-sm text-muted-foreground/70 mt-1">
+        <p className="text-sm text-muted-foreground max-w-xs leading-relaxed">
           צור תובנות כדי לראות אותן כאן ולחבר ביניהן
         </p>
       </div>
@@ -193,10 +193,10 @@ export default function Canvas() {
 
   return (
     <div className="h-[calc(100vh-4rem)] flex flex-col">
-      <div className="flex items-center justify-between pb-3">
+      <div className="flex items-center justify-between pb-4">
         <div>
           <h1 className="text-xl font-bold text-foreground">קנבס קשרים</h1>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-muted-foreground mt-0.5">
             גרור תובנות, חבר ביניהן, ולחץ פעמיים לעריכה
           </p>
         </div>
@@ -204,7 +204,7 @@ export default function Canvas() {
           size="sm"
           onClick={handleSavePositions}
           disabled={!hasChanges || bulkUpdateMutation.isPending}
-          className="gap-1"
+          className="gap-1 rounded-xl"
         >
           {bulkUpdateMutation.isPending ? (
             <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -214,7 +214,7 @@ export default function Canvas() {
           שמור מיקומים
         </Button>
       </div>
-      <div className="flex-1 rounded-lg border border-border overflow-hidden" dir="ltr">
+      <div className="flex-1 rounded-xl border border-border overflow-hidden bg-white" dir="ltr">
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -226,17 +226,27 @@ export default function Canvas() {
           nodeTypes={nodeTypes}
           fitView
           proOptions={{ hideAttribution: true }}
-          style={{ background: "oklch(0.145 0.005 260)" }}
+          style={{ background: "#fafaf8" }}
         >
-          <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="oklch(0.25 0.005 260)" />
+          <Background variant={BackgroundVariant.Dots} gap={24} size={1} color="#e5e5e0" />
           <Controls
             position="bottom-left"
-            style={{ background: "oklch(0.19 0.008 260)", border: "1px solid oklch(0.28 0.01 260)", borderRadius: "8px" }}
+            style={{
+              background: "white",
+              border: "1px solid #e5e5e0",
+              borderRadius: "12px",
+              boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
+            }}
           />
           <MiniMap
-            nodeColor={() => "oklch(0.75 0.15 65)"}
-            maskColor="oklch(0.145 0.005 260 / 80%)"
-            style={{ background: "oklch(0.19 0.008 260)", border: "1px solid oklch(0.28 0.01 260)", borderRadius: "8px" }}
+            nodeColor={() => "#0d9488"}
+            maskColor="rgba(250,250,248,0.8)"
+            style={{
+              background: "white",
+              border: "1px solid #e5e5e0",
+              borderRadius: "12px",
+              boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
+            }}
           />
         </ReactFlow>
       </div>
